@@ -1,6 +1,6 @@
 "use server";
 
-import {createAdminClient, createSessionClient} from "@/lib/appwrite";
+import { createAdminClient, createSessionClient } from "@/lib/appwrite";
 import { InputFile } from "node-appwrite/file";
 import { appwriteConfig } from "@/lib/appwrite/config";
 import { ID, Models, Query } from "node-appwrite";
@@ -18,7 +18,6 @@ export const uploadFile = async ({
   ownerId,
   accountId,
   path,
-  // eslint-disable-next-line no-undef
 }: UploadFileProps) => {
   const { storage, databases } = await createAdminClient();
 
@@ -42,6 +41,7 @@ export const uploadFile = async ({
       users: [],
       bucketFileId: bucketFile.$id,
     };
+
     const newFile = await databases
       .createDocument(
         appwriteConfig.databaseId,
@@ -53,6 +53,7 @@ export const uploadFile = async ({
         await storage.deleteFile(appwriteConfig.bucketId, bucketFile.$id);
         handleError(error, "Failed to create file document");
       });
+
     revalidatePath(path);
     return parseStringify(newFile);
   } catch (error) {
@@ -78,12 +79,14 @@ const createQueries = (
   if (searchText) queries.push(Query.contains("name", searchText));
   if (limit) queries.push(Query.limit(limit));
 
-  const [sortBy, orderBy] = sort.split("-");
+  if (sort) {
+    const [sortBy, orderBy] = sort.split("-");
 
-  queries.push(
-    orderBy === "asc" ? Query.orderAsc(sortBy) : Query.orderDesc(sortBy),
-  );
-  // TODO: Search, Sort, limits
+    queries.push(
+      orderBy === "asc" ? Query.orderAsc(sortBy) : Query.orderDesc(sortBy),
+    );
+  }
+
   return queries;
 };
 
@@ -98,9 +101,7 @@ export const getFiles = async ({
   try {
     const currentUser = await getCurrentUser();
 
-    if (!currentUser) {
-      throw new Error("No user found.");
-    }
+    if (!currentUser) throw new Error("User not found");
 
     const queries = createQueries(currentUser, types, searchText, sort, limit);
 
@@ -110,6 +111,7 @@ export const getFiles = async ({
       queries,
     );
 
+    console.log({ files });
     return parseStringify(files);
   } catch (error) {
     handleError(error, "Failed to get files");
@@ -134,6 +136,7 @@ export const renameFile = async ({
         name: newName,
       },
     );
+
     revalidatePath(path);
     return parseStringify(updatedFile);
   } catch (error) {
@@ -157,6 +160,7 @@ export const updateFileUsers = async ({
         users: emails,
       },
     );
+
     revalidatePath(path);
     return parseStringify(updatedFile);
   } catch (error) {
