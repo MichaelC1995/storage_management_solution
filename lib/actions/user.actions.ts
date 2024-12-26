@@ -100,12 +100,12 @@ export const getCurrentUser = async () => {
     const result = await account.get();
 
     const user = await databases.listDocuments(
-      appwriteConfig.databaseId,
-      appwriteConfig.usersCollectionId,
-      [Query.equal("accountId", result.$id)],
+        appwriteConfig.databaseId,
+        appwriteConfig.usersCollectionId,
+        [Query.equal("accountId", result.$id)],
     );
 
-    if (user.total < 1) return null;
+    if (user.total <= 0) return null;
 
     return parseStringify(user.documents[0]);
   } catch (error) {
