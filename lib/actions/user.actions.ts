@@ -5,9 +5,8 @@ import { appwriteConfig } from "@/lib/appwrite/config";
 import { Query, ID } from "node-appwrite";
 import { parseStringify } from "@/lib/utils";
 import { cookies } from "next/headers";
-// import { avatarPlaceholderUrl } from "@/constants";
+import { avatarPlaceholderUrl } from "@/constants";
 import { redirect } from "next/navigation";
-import {avatarPlaceholderUrl} from "@/constants";
 
 const getUserByEmail = async (email: string) => {
   const { databases } = await createAdminClient();
@@ -15,7 +14,7 @@ const getUserByEmail = async (email: string) => {
   const result = await databases.listDocuments(
     appwriteConfig.databaseId,
     appwriteConfig.usersCollectionId,
-    [Query.equal("email", email)],
+    [Query.equal("email", [email])],
   );
 
   return result.total > 0 ? result.documents[0] : null;
